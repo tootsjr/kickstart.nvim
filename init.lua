@@ -559,7 +559,20 @@ require('lazy').setup({
         gopls = {},
         pyright = {},
         rust_analyzer = {},
-        ts_ls = {},
+        ts_ls = {
+          settings = {
+            typescript = {
+              suggest = {
+                autoImports = true,
+              },
+            },
+            javascript = {
+              suggest = {
+                autoImports = true,
+              },
+            },
+          },
+        },
         tailwindcss = {},
 
         emmet_ls = {
@@ -571,7 +584,16 @@ require('lazy').setup({
             'sass',
             'scss',
             'less',
-            'eruby',
+          },
+          init_options = {
+            -- FIX 2: JSX attribute naming and deep expansion support
+            jsxAttributeNameCase = 'camelCase',
+            showAbbreviationSuggestions = true,
+            showSuggestionsAsSnippets = true,
+            includeLanguages = {
+              ['typescriptreact'] = 'html',
+              ['javascriptreact'] = 'html',
+            },
           },
         },
         stylua = {},
