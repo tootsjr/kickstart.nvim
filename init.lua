@@ -741,15 +741,22 @@ require('lazy').setup({
     priority = 1000,
     config = function()
       require('cyberdream').setup {
-        transparent = true, -- This is the big one!
+        transparent = true,
         italic_comments = false,
         hide_fillchars = true,
         borderless_telescope = true,
         terminal_colors = true,
+        -- Override the default blue-tinted background with neutral dark gray
+        colors = {
+          bg = '#111111',
+          bgAlt = '#191919',
+        },
       }
       vim.cmd.colorscheme 'cyberdream'
 
-      -- Optional: Ensure the line numbers and sign column stay transparent too
+      -- Keep all chrome elements fully transparent so wezterm bg shows through
+      vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+      vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'none' })
       vim.api.nvim_set_hl(0, 'LineNr', { bg = 'none' })
       vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'none' })
       vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'none' })
