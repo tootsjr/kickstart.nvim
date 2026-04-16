@@ -11,9 +11,8 @@ vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.o.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+-- Relative numbers make jumping with counts (e.g. 5j, 12k) much easier
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -232,10 +231,10 @@ require('lazy').setup({
     ---@diagnostic disable-next-line: missing-fields
     opts = {
       signs = {
-        add = { text = '+' }, ---@diagnostic disable-line: missing-fields
-        change = { text = '~' }, ---@diagnostic disable-line: missing-fields
-        delete = { text = '_' }, ---@diagnostic disable-line: missing-fields
-        topdelete = { text = '‾' }, ---@diagnostic disable-line: missing-fields
+        add = { text = '┃' }, ---@diagnostic disable-line: missing-fields
+        change = { text = '┃' }, ---@diagnostic disable-line: missing-fields
+        delete = { text = '▾' }, ---@diagnostic disable-line: missing-fields
+        topdelete = { text = '▴' }, ---@diagnostic disable-line: missing-fields
         changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
       },
     },
@@ -269,8 +268,11 @@ require('lazy').setup({
       -- Document existing key chains
       spec = {
         { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
-        { '<leader>t', group = '[T]oggle' },
+        { '<leader>t', group = '[T]oggle / [T]est' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>a', group = '[A]I Assistant' },
+        { '<leader>x', group = 'Diagnostics' },
+        { '<leader>R', group = '[R]eplace (Spectre)' },
         { 'gr', group = 'LSP Actions', mode = { 'n' } },
       },
     },
@@ -451,7 +453,7 @@ require('lazy').setup({
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
-      { 'j-hui/fidget.nvim', opts = {} },
+      'j-hui/fidget.nvim',
 
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
@@ -635,7 +637,10 @@ require('lazy').setup({
       -- You can press `g?` for help in this menu.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
-        -- You can add other tools here that you want Mason to install
+        'prettierd',
+        'black',
+        'eslint_d',
+        'ruff',
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -682,6 +687,11 @@ require('lazy').setup({
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true },
         typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        scss = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -763,16 +773,6 @@ require('lazy').setup({
     end,
   },
 
-  {
-    'folke/todo-comments.nvim',
-    event = 'VimEnter',
-    dependencies = { 'nvim-lua/plenary.nvim' },
-    ---@module 'todo-comments'
-    ---@type TodoOptions
-    ---@diagnostic disable-next-line: missing-fields
-    opts = { signs = false },
-  },
-
   { -- Collection of various small independent plugins/modules
     'nvim-mini/mini.nvim',
     config = function()
@@ -791,18 +791,7 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
-      -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
-
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function() return '%2l:%-2v' end
+      -- mini.statusline disabled in favour of lualine (lua/plugins/ui-enhancements.lua)
 
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim
@@ -834,8 +823,11 @@ require('lazy').setup({
         'css',
         'typescript',
         'javascript',
+        'tsx',
+        'go',
+        'json',
+        'regex',
       }
-      if client and client.supports_method 'textDocument/inlayHint' then vim.lsp.inlay_hint.enable(true) end
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
@@ -881,7 +873,8 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
