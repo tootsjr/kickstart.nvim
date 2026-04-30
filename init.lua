@@ -9,10 +9,8 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
--- Make line numbers default
 vim.o.number = true
--- Relative numbers make jumping with counts (e.g. 5j, 12k) much easier
-vim.o.relativenumber = true
+vim.o.relativenumber = false
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -73,6 +71,11 @@ vim.o.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
+vim.o.termguicolors = true
+vim.o.tabstop = 2
+vim.o.shiftwidth = 2
+vim.o.expandtab = true
+vim.o.smartindent = true
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -752,7 +755,7 @@ require('lazy').setup({
     config = function()
       require('cyberdream').setup {
         transparent = true,
-        italic_comments = false,
+        italic_comments = true,
         hide_fillchars = true,
         borderless_telescope = true,
         terminal_colors = true,
@@ -770,6 +773,26 @@ require('lazy').setup({
       vim.api.nvim_set_hl(0, 'LineNr', { bg = 'none' })
       vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'none' })
       vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'none' })
+      -- Floats need a solid background so noice/blink popups don't bleed through content
+      vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#191919' })
+      vim.api.nvim_set_hl(0, 'FloatBorder', { bg = '#191919', fg = '#444444' })
+      -- Restore a thin vert char (cyberdream's hide_fillchars replaces it with a space,
+      -- making fg-only WinSeparator highlights invisible)
+      vim.opt.fillchars:append { vert = '▏', vertleft = '▏', vertright = '▏', verthoriz = '▏' }
+      vim.api.nvim_set_hl(0, 'WinSeparator', { fg = '#3a3a3a' })
+
+      local function italicize(group)
+        local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
+        hl.italic = true
+        vim.api.nvim_set_hl(0, group, hl)
+      end
+      local italic_groups = {
+        '@keyword', '@keyword.conditional', '@keyword.repeat',
+        '@keyword.return', '@keyword.function', '@keyword.operator',
+        '@keyword.import', '@type', '@type.builtin',
+        '@variable.parameter', '@variable.builtin', '@constant.builtin',
+      }
+      for _, group in ipairs(italic_groups) do italicize(group) end
     end,
   },
 
@@ -802,52 +825,26 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     lazy = false,
     build = ':TSUpdate',
-    branch = 'main',
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
+    branch = 'master',
+    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     config = function()
-      local parsers = {
-        'bash',
-        'c',
-        'diff',
-        'html',
-        'lua',
-        'luadoc',
-        'markdown',
-        'markdown_inline',
-        'query',
-        'vim',
-        'vimdoc',
-        'cpp',
-        'rust',
-        'python',
-        'css',
-        'typescript',
-        'javascript',
-        'tsx',
-        'go',
-        'json',
-        'regex',
+      require('nvim-treesitter.configs').setup {
+        ensure_installed = {
+          'bash', 'c', 'diff', 'html', 'lua', 'luadoc',
+          'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc',
+          'cpp', 'rust', 'python', 'css', 'typescript', 'javascript',
+          'tsx', 'go', 'json', 'regex',
+        },
+        auto_install = false,
+        highlight = { enable = true },
+        indent = { enable = true, disable = { 'c', 'cpp' } },
       }
-      require('nvim-treesitter').install(parsers)
+
       vim.api.nvim_create_autocmd('FileType', {
-        callback = function(args)
-          local buf, filetype = args.buf, args.match
-
-          local language = vim.treesitter.language.get_lang(filetype)
-          if not language then return end
-
-          -- check if parser exists and load it
-          if not vim.treesitter.language.add(language) then return end
-          -- enables syntax highlighting and other treesitter features
-          vim.treesitter.start(buf, language)
-
-          -- enables treesitter based folds
-          -- for more info on folds see `:help folds`
-          -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-          -- vim.wo.foldmethod = 'expr'
-
-          -- enables treesitter based indentation
-          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        pattern = { 'c', 'cpp' },
+        callback = function()
+          vim.bo.cindent = true
+          vim.bo.smartindent = false
         end,
       })
     end,
