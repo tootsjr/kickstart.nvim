@@ -29,7 +29,7 @@ return {
       { '<leader>am', '<cmd>ClaudeCodeSelectModel<cr>',   desc = '[A]I select [M]odel' },
       { '<leader>ab', '<cmd>ClaudeCodeAdd %<cr>',         desc = '[A]I add current [B]uffer' },
       { '<leader>as', '<cmd>ClaudeCodeSend<cr>',          mode = 'v', desc = '[A]I [S]end selection' },
-      { '<leader>as', '<cmd>ClaudeCodeTreeAdd<cr>',       ft = { 'neo-tree', 'NvimTree', 'oil', 'minifiles', 'netrw' }, desc = '[A]I add file from tree' },
+      { '<leader>at', '<cmd>ClaudeCodeTreeAdd<cr>',       ft = { 'neo-tree', 'NvimTree', 'oil', 'minifiles', 'netrw' }, desc = '[A]I add file from [T]ree' },
       { '<leader>aa', '<cmd>ClaudeCodeDiffAccept<cr>',    desc = '[A]I [A]ccept diff' },
       { '<leader>ad', '<cmd>ClaudeCodeDiffDeny<cr>',      desc = '[A]I [D]eny diff' },
     },
