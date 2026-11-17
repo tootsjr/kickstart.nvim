@@ -30,6 +30,7 @@ return {
         lua = { 'stylua' },
         python = { 'ruff_format' },
         rust = { 'rustfmt' },
+        c = { 'clang-format' },
         cpp = { 'clang-format' },
         -- For web dev
 

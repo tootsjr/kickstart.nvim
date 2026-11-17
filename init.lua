@@ -89,6 +89,10 @@ vim.keymap.set('i', '\27\8', '<C-w>', { desc = 'Delete backward by word' })
 vim.keymap.set('i', '\27\127', '<C-w>', { desc = 'Delete backward by word' })
 vim.keymap.set('i', '\27f', '<C-o>w', { desc = 'Move forward by word' })
 
+-- Ghostty sends Command-left/right as escape sequences through tmux.
+vim.keymap.set('i', '\27[H', '<C-o>0', { desc = 'Move to the beginning of the line' })
+vim.keymap.set('i', '\27[F', '<C-o>$', { desc = 'Move to the end of the line' })
+
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
 vim.diagnostic.config {
@@ -166,6 +170,8 @@ end
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
+require('custom.python').setup()
+
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'

@@ -30,6 +30,7 @@ return {
       window = {
         mappings = {
           ['<leader>e'] = 'close_window',
+          ['c'] = { 'copy', config = { show_path = 'none' } },
         },
       },
     },

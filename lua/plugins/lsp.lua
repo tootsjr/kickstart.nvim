@@ -80,6 +80,9 @@ return {
           --  Most Language Servers support renaming across files, etc.
           map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
 
+          -- Show hover documentation, including Python docstrings.
+          map('K', vim.lsp.buf.hover, 'Hover Documentation')
+
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
           map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
@@ -134,7 +137,31 @@ return {
       local servers = {
         clangd = {},
         gopls = {},
-        pyright = {},
+        pyright = {
+          on_init = function(client)
+            local python_module = require('custom.python')
+            local environment, python = python_module.environment_for(client.config.root_dir or vim.fn.getcwd())
+            if python then
+              local site_packages = vim.fs.find('site-packages', {
+                path = environment .. '/lib',
+                type = 'directory',
+                limit = 1,
+              })[1]
+              local python_settings = {
+                pythonPath = python,
+                venvPath = vim.fs.dirname(environment),
+                venv = vim.fs.basename(environment),
+              }
+              if site_packages then python_settings.analysis = { extraPaths = { site_packages } } end
+
+              client.settings.python = vim.tbl_deep_extend('force', client.settings.python or {}, python_settings)
+              client.config.settings = vim.tbl_deep_extend('force', client.config.settings or {}, {
+                python = python_settings,
+              })
+              client:notify('workspace/didChangeConfiguration', { settings = nil })
+            end
+          end,
+        },
         rust_analyzer = {},
         ts_ls = {
           settings = {
@@ -218,6 +245,7 @@ return {
         'prettierd',
         'eslint_d',
         'ruff',
+        'clang-format',
         'stylua',
         'markdownlint',
         'xcode-build-server', -- bridges Xcode project builds to sourcekit-lsp

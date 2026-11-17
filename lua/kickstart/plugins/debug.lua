@@ -2,9 +2,8 @@
 --
 -- Shows how to use the DAP plugin to debug your code.
 --
--- Primarily focused on configuring the debugger for Go, but can
--- be extended to other languages as well. That's why it's called
--- kickstart.nvim and not kitchen-sink.nvim ;)
+-- Configures DAP for Python and C++ while keeping the debugger UI and
+-- keybindings shared across both languages.
 
 ---@module 'lazy'
 ---@type LazySpec
@@ -24,7 +23,7 @@ return {
     'jay-babu/mason-nvim-dap.nvim',
 
     -- Add your own debuggers here
-    'leoluz/nvim-dap-go',
+    'mfussenegger/nvim-dap-python',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -48,13 +47,16 @@ return {
 
       -- You can provide additional configuration to the handlers,
       -- see mason-nvim-dap README for more information
-      handlers = {},
+      handlers = {
+        function(config) require('mason-nvim-dap').default_setup(config) end,
+      },
 
       -- You'll need to check that you have the required things installed
       -- online, please don't ask me how to install them :)
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
-        'delve',
+        'codelldb',
+        'debugpy',
       },
     }
 
@@ -98,13 +100,26 @@ return {
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
-    -- Install golang specific config
-    require('dap-go').setup {
-      delve = {
-        -- On Windows delve must be run attached or it crashes.
-        -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
-        detached = vim.fn.has 'win32' == 0,
+    -- Prefer the project's virtualenv so debugpy resolves the same imports
+    -- as the project being debugged.
+    local python = require('custom.python').python_for(vim.fn.getcwd()) or vim.fn.exepath 'python'
+    if python == '' then python = vim.fn.exepath 'python3' end
+    if python == '' then
+      vim.notify('Python executable not found; configure nvim-dap-python manually', vim.log.levels.WARN)
+    else
+      require('dap-python').setup(python)
+    end
+
+    dap.configurations.c = {
+      {
+        name = 'Launch executable',
+        type = 'codelldb',
+        request = 'launch',
+        program = function() return vim.fn.input('Executable: ', vim.fn.getcwd() .. '/', 'file') end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
       },
     }
+    dap.configurations.cpp = dap.configurations.c
   end,
 }
